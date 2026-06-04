@@ -52,11 +52,8 @@ if (!admin) {
   db.prepare("UPDATE users SET role = 'admin' WHERE username = 'admin'").run();
 }
 
-// Migration : rattacher les liens orphelins à l'admin
-const noOwner = db.prepare('SELECT COUNT(*) as n FROM links WHERE user_id IS NULL').get();
-if (noOwner.n > 0) {
-  const a = db.prepare("SELECT id FROM users WHERE username = 'admin'").get();
-  db.prepare('UPDATE links SET user_id = ? WHERE user_id IS NULL').run(a.id);
-}
+// Migration : supprimer les liens orphelins (créés avant le système multi-utilisateurs)
+db.prepare('DELETE FROM clicks WHERE link_id IN (SELECT id FROM links WHERE user_id IS NULL)').run();
+db.prepare('DELETE FROM links WHERE user_id IS NULL').run();
 
 module.exports = db;

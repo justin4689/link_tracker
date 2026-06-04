@@ -235,6 +235,52 @@ function copyLink() {
   });
 }
 
+// ---- Modal mot de passe ----
+function openPwdModal() {
+  document.getElementById('pwd-current').value  = '';
+  document.getElementById('pwd-new').value      = '';
+  document.getElementById('pwd-confirm').value  = '';
+  document.getElementById('pwd-error').style.display   = 'none';
+  document.getElementById('pwd-success').style.display = 'none';
+  document.getElementById('pwd-modal').classList.add('open');
+}
+
+function closePwdModal() {
+  document.getElementById('pwd-modal').classList.remove('open');
+}
+
+document.getElementById('pwd-modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('pwd-modal')) closePwdModal();
+});
+
+async function changePassword() {
+  const currentPassword  = document.getElementById('pwd-current').value.trim();
+  const newPassword      = document.getElementById('pwd-new').value.trim();
+  const confirmPassword  = document.getElementById('pwd-confirm').value.trim();
+  const errEl  = document.getElementById('pwd-error');
+  const okEl   = document.getElementById('pwd-success');
+
+  errEl.style.display = 'none';
+  okEl.style.display  = 'none';
+
+  const res  = await fetch('/api/me/password', {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body:    JSON.stringify({ currentPassword, newPassword, confirmPassword }),
+  });
+  const data = await res.json();
+
+  if (!res.ok) {
+    errEl.textContent   = data.error;
+    errEl.style.display = 'block';
+    return;
+  }
+
+  okEl.textContent    = 'Mot de passe modifié avec succès.';
+  okEl.style.display  = 'block';
+  setTimeout(closePwdModal, 1500);
+}
+
 // ---- Démarrage ----
 fetch('/api/me')
   .then(r => r.json())

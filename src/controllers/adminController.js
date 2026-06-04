@@ -51,6 +51,19 @@ exports.deleteUser = (req, res) => {
   res.json({ success: true });
 };
 
+exports.resetUserPassword = async (req, res) => {
+  const { password } = req.body;
+  if (!password || password.length < 6)
+    return res.status(400).json({ error: 'Mot de passe trop court (6 car. min)' });
+
+  const user = db.prepare('SELECT id FROM users WHERE id = ?').get(req.params.id);
+  if (!user) return res.status(404).json({ error: 'Utilisateur introuvable' });
+
+  const hash = await bcrypt.hash(password, 10);
+  db.prepare('UPDATE users SET password = ? WHERE id = ?').run(hash, req.params.id);
+  res.json({ success: true });
+};
+
 exports.resetDb = (req, res) => {
   db.transaction(() => {
     db.exec("DELETE FROM clicks");

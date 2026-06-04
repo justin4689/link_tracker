@@ -31,3 +31,22 @@ exports.logout = (req, res) => {
 exports.me = (req, res) => {
   res.json({ username: req.session.username, role: req.session.role });
 };
+
+exports.changePassword = async (req, res) => {
+  const { currentPassword, newPassword, confirmPassword } = req.body;
+
+  if (!currentPassword || !newPassword)
+    return res.status(400).json({ error: 'Champs requis' });
+  if (newPassword !== confirmPassword)
+    return res.status(400).json({ error: 'Les mots de passe ne correspondent pas' });
+  if (newPassword.length < 6)
+    return res.status(400).json({ error: 'Mot de passe trop court (6 car. min)' });
+
+  const user  = db.prepare('SELECT * FROM users WHERE id = ?').get(req.session.userId);
+  const valid = await bcrypt.compare(currentPassword, user.password);
+  if (!valid) return res.status(401).json({ error: 'Mot de passe actuel incorrect' });
+
+  const hash = await bcrypt.hash(newPassword, 10);
+  db.prepare('UPDATE users SET password = ? WHERE id = ?').run(hash, req.session.userId);
+  res.json({ success: true });
+};

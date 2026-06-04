@@ -110,6 +110,24 @@
   </div>
 </div>
 
+<!-- Modal réinitialisation mot de passe user -->
+<div class="modal-overlay" id="pwd-user-modal">
+  <div class="modal">
+    <p class="modal-title">Réinitialiser le mot de passe</p>
+    <p class="page-sub" id="pwd-user-label" style="margin-bottom:20px;"></p>
+    <div class="form-group">
+      <label class="form-label">Nouveau mot de passe</label>
+      <input class="form-input" type="password" id="pwd-user-new" placeholder="6 caractères minimum">
+    </div>
+    <div id="pwd-user-error"   style="display:none; background:var(--danger-bg);  color:var(--danger-text);  font-size:13px; padding:10px 14px; border-radius:var(--radius-sm); margin-bottom:12px;"></div>
+    <div id="pwd-user-success" style="display:none; background:var(--success-bg); color:var(--success-text); font-size:13px; padding:10px 14px; border-radius:var(--radius-sm); margin-bottom:12px;"></div>
+    <div style="display:flex; gap:10px;">
+      <button class="btn btn-primary" onclick="confirmResetUserPassword()">Confirmer</button>
+      <button class="btn" onclick="document.getElementById('pwd-user-modal').classList.remove('open')">Annuler</button>
+    </div>
+  </div>
+</div>
+
 <script src="/js/admin.js"></script>
 </body>
 </html>

@@ -15,7 +15,10 @@ async function loadUsers() {
       </td>
       <td>${u.link_count}</td>
       <td style="color:var(--muted); font-size:12px;">${new Date(u.created_at).toLocaleDateString('fr-FR')}</td>
-      <td>
+      <td style="display:flex; gap:8px; flex-wrap:wrap;">
+        <button class="copy-btn" onclick="openResetPwd(${u.id}, '${u.username}')">
+          Mot de passe
+        </button>
         ${u.role !== 'admin' ? `
           <button class="copy-btn" style="color:var(--danger-text); border-color:var(--danger-text);"
             onclick="deleteUser(${u.id}, '${u.username}')">
@@ -84,5 +87,48 @@ document.getElementById('reset-modal').addEventListener('click', e => {
   if (e.target === document.getElementById('reset-modal'))
     document.getElementById('reset-modal').classList.remove('open');
 });
+
+// ---- Réinitialisation mot de passe user ----
+let _pwdTargetId = null;
+
+function openResetPwd(id, username) {
+  _pwdTargetId = id;
+  document.getElementById('pwd-user-label').textContent     = `Utilisateur : ${username}`;
+  document.getElementById('pwd-user-new').value             = '';
+  document.getElementById('pwd-user-error').style.display   = 'none';
+  document.getElementById('pwd-user-success').style.display = 'none';
+  document.getElementById('pwd-user-modal').classList.add('open');
+}
+
+document.getElementById('pwd-user-modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('pwd-user-modal'))
+    document.getElementById('pwd-user-modal').classList.remove('open');
+});
+
+async function confirmResetUserPassword() {
+  const password = document.getElementById('pwd-user-new').value.trim();
+  const errEl    = document.getElementById('pwd-user-error');
+  const okEl     = document.getElementById('pwd-user-success');
+
+  errEl.style.display = 'none';
+  okEl.style.display  = 'none';
+
+  const res  = await fetch(`/admin/api/users/${_pwdTargetId}/password`, {
+    method:  'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body:    JSON.stringify({ password }),
+  });
+  const data = await res.json();
+
+  if (!res.ok) {
+    errEl.textContent   = data.error;
+    errEl.style.display = 'block';
+    return;
+  }
+
+  okEl.textContent   = 'Mot de passe mis à jour.';
+  okEl.style.display = 'block';
+  setTimeout(() => document.getElementById('pwd-user-modal').classList.remove('open'), 1500);
+}
 
 loadUsers();

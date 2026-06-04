@@ -34,8 +34,11 @@ app.get('/', requireAuth, requireUser, (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
 });
 
-// API dashboard — protégée (users seulement)
-app.get('/api/me',    requireAuth, authController.me);
+// API protégée — tous les connectés
+app.get('/api/me',               requireAuth, authController.me);
+app.post('/api/me/password',     requireAuth, authController.changePassword);
+
+// API dashboard — users seulement
 app.use('/api/links', requireAuth, requireUser, linksRouter);
 app.use('/api/stats', requireAuth, requireUser, statsRouter);
 
