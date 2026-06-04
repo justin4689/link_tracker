@@ -6,14 +6,15 @@ exports.createLink = (req, res) => {
   if (!destination) return res.status(400).json({ error: 'destination requise' });
 
   const id = crypto.randomBytes(4).toString('hex').toUpperCase();
-  db.prepare('INSERT INTO links VALUES (?, ?, ?, CURRENT_TIMESTAMP)')
-    .run(id, destination, campaign || '');
+  db.prepare('INSERT INTO links (id, destination, campaign, user_id) VALUES (?, ?, ?, ?)')
+    .run(id, destination, campaign || '', req.session.userId);
 
   res.json({ id, url: `${req.protocol}://${req.get('host')}/track/${id}` });
 };
 
 exports.getLinkClicks = (req, res) => {
-  const link = db.prepare('SELECT * FROM links WHERE id = ?').get(req.params.id);
+  const link = db.prepare('SELECT * FROM links WHERE id = ? AND user_id = ?')
+    .get(req.params.id, req.session.userId);
   if (!link) return res.status(404).json({ error: 'Lien introuvable' });
 
   const clicks = db.prepare(
@@ -29,7 +30,7 @@ exports.getLinkClicks = (req, res) => {
 
   const byCountry = db.prepare(`
     SELECT country, COUNT(*) as count FROM clicks
-    WHERE link_id = ? AND country != 'Inconnu'
+    WHERE link_id = ? AND country NOT IN ('Inconnu','Local')
     GROUP BY country ORDER BY count DESC LIMIT 10
   `).all(req.params.id);
 

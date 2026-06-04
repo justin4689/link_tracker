@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>LinkTrack — Connexion</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    body { display:flex; align-items:center; justify-content:center; min-height:100vh; }
+    .auth-card { background:var(--surface); border:0.5px solid var(--border); border-radius:var(--radius); padding:40px; width:380px; max-width:90vw; }
+    .auth-logo { display:flex; align-items:center; gap:10px; margin-bottom:32px; }
+    .auth-logo-dot { width:10px; height:10px; background:var(--accent); border-radius:50%; }
+    .auth-logo-text { font-size:16px; font-weight:600; letter-spacing:-0.3px; }
+    .auth-title { font-size:20px; font-weight:600; letter-spacing:-0.3px; margin-bottom:4px; }
+    .auth-sub { font-size:13px; color:var(--muted); margin-bottom:28px; }
+    .error-msg { background:var(--danger-bg); color:var(--danger-text); font-size:13px; padding:10px 14px; border-radius:var(--radius-sm); margin-bottom:20px; display:none; }
+    .error-msg.show { display:block; }
+    .auth-btn { width:100%; padding:11px; font-size:14px; font-weight:500; background:var(--accent); color:#fff; border:none; border-radius:var(--radius-sm); cursor:pointer; transition:background 0.15s; margin-top:8px; }
+    .auth-btn:hover { background:#333; }
+    .auth-footer { text-align:center; margin-top:20px; font-size:13px; color:var(--muted); }
+    .auth-footer a { color:var(--text); font-weight:500; text-decoration:none; }
+    .auth-footer a:hover { text-decoration:underline; }
+  </style>
+</head>
+<body>
+<div class="auth-card">
+  <div class="auth-logo">
+    <div class="auth-logo-dot"></div>
+    <span class="auth-logo-text">LinkTrack</span>
+  </div>
+
+  <p class="auth-title">Connexion</p>
+  <p class="auth-sub">Accédez à votre tableau de bord</p>
+
+  <div class="error-msg" id="error-msg">Identifiant ou mot de passe incorrect.</div>
+
+  <form method="POST" action="/login">
+    <div class="form-group">
+      <label class="form-label">Identifiant</label>
+      <input class="form-input" type="text" name="username" placeholder="votre identifiant" autocomplete="username" autofocus required>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Mot de passe</label>
+      <input class="form-input" type="password" name="password" placeholder="••••••••" autocomplete="current-password" required>
+    </div>
+    <button class="auth-btn" type="submit">Se connecter</button>
+  </form>
+
+  <div class="auth-footer">
+    Pas encore de compte ? <a href="/register">S'inscrire</a>
+  </div>
+</div>
+
+<script>
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('error')) document.getElementById('error-msg').classList.add('show');
+</script>
+</body>
+</html>

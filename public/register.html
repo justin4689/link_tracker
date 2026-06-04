@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>LinkTrack — Inscription</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    body { display:flex; align-items:center; justify-content:center; min-height:100vh; }
+    .auth-card { background:var(--surface); border:0.5px solid var(--border); border-radius:var(--radius); padding:40px; width:380px; max-width:90vw; }
+    .auth-logo { display:flex; align-items:center; gap:10px; margin-bottom:32px; }
+    .auth-logo-dot { width:10px; height:10px; background:var(--accent); border-radius:50%; }
+    .auth-logo-text { font-size:16px; font-weight:600; letter-spacing:-0.3px; }
+    .auth-title { font-size:20px; font-weight:600; letter-spacing:-0.3px; margin-bottom:4px; }
+    .auth-sub { font-size:13px; color:var(--muted); margin-bottom:28px; }
+    .error-msg { background:var(--danger-bg); color:var(--danger-text); font-size:13px; padding:10px 14px; border-radius:var(--radius-sm); margin-bottom:20px; display:none; }
+    .error-msg.show { display:block; }
+    .auth-btn { width:100%; padding:11px; font-size:14px; font-weight:500; background:var(--accent); color:#fff; border:none; border-radius:var(--radius-sm); cursor:pointer; transition:background 0.15s; margin-top:8px; }
+    .auth-btn:hover { background:#333; }
+    .auth-footer { text-align:center; margin-top:20px; font-size:13px; color:var(--muted); }
+    .auth-footer a { color:var(--text); font-weight:500; text-decoration:none; }
+    .auth-footer a:hover { text-decoration:underline; }
+  </style>
+</head>
+<body>
+<div class="auth-card">
+  <div class="auth-logo">
+    <div class="auth-logo-dot"></div>
+    <span class="auth-logo-text">LinkTrack</span>
+  </div>
+
+  <p class="auth-title">Créer un compte</p>
+  <p class="auth-sub">Commencez à tracker vos liens</p>
+
+  <div class="error-msg" id="error-msg"></div>
+
+  <form method="POST" action="/register">
+    <div class="form-group">
+      <label class="form-label">Identifiant</label>
+      <input class="form-input" type="text" name="username" placeholder="ex: justin" autocomplete="username" autofocus required>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Mot de passe</label>
+      <input class="form-input" type="password" name="password" placeholder="6 caractères minimum" autocomplete="new-password" required>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Confirmer le mot de passe</label>
+      <input class="form-input" type="password" name="confirm" placeholder="••••••••" autocomplete="new-password" required>
+    </div>
+    <button class="auth-btn" type="submit">Créer mon compte</button>
+  </form>
+
+  <div class="auth-footer">
+    Déjà un compte ? <a href="/login">Se connecter</a>
+  </div>
+</div>
+
+<script>
+  const messages = {
+    empty:    'Tous les champs sont requis.',
+    mismatch: 'Les mots de passe ne correspondent pas.',
+    short:    'Le mot de passe doit faire au moins 6 caractères.',
+    taken:    'Cet identifiant est déjà utilisé.',
+  };
+  const error = new URLSearchParams(window.location.search).get('error');
+  if (error) {
+    const el = document.getElementById('error-msg');
+    el.textContent = messages[error] || 'Une erreur est survenue.';
+    el.classList.add('show');
+  }
+</script>
+</body>
+</html>

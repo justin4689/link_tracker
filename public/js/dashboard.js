@@ -236,5 +236,9 @@ function copyLink() {
 }
 
 // ---- Démarrage ----
+fetch('/api/me')
+  .then(r => r.json())
+  .then(d => { document.getElementById('sidebar-username').textContent = d.username; });
+
 loadStats();
 setInterval(loadStats, 30000);
