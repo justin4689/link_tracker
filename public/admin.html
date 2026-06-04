@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>LinkTrack — Administration</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<nav class="sidebar">
+  <div class="sidebar-logo"><span></span>LinkTrack</div>
+  <a class="nav-item active">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+    Utilisateurs
+  </a>
+
+  <div style="margin-top:auto;">
+    <div style="padding:10px 12px 8px; font-size:12px; color:var(--muted);">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width:13px;height:13px;vertical-align:middle;margin-right:6px;"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+      admin
+    </div>
+    <form method="POST" action="/logout">
+      <button class="nav-item" type="submit" style="color:var(--muted);">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Déconnexion
+      </button>
+    </form>
+  </div>
+</nav>
+
+<main class="main">
+
+  <div class="page-header">
+    <div>
+      <p class="page-title">Administration</p>
+      <p class="page-sub">Gestion des utilisateurs</p>
+    </div>
+  </div>
+
+  <!-- Créer un utilisateur -->
+  <div class="card">
+    <div class="card-header">
+      <p class="card-title">Créer un utilisateur</p>
+    </div>
+    <div style="display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap;">
+      <div class="form-group" style="flex:1; min-width:160px; margin:0;">
+        <label class="form-label">Identifiant</label>
+        <input class="form-input" type="text" id="new-username" placeholder="ex: jean.dupont">
+      </div>
+      <div class="form-group" style="flex:1; min-width:160px; margin:0;">
+        <label class="form-label">Mot de passe</label>
+        <input class="form-input" type="password" id="new-password" placeholder="6 caractères min.">
+      </div>
+      <button class="btn btn-primary" onclick="createUser()" style="flex-shrink:0;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Créer
+      </button>
+    </div>
+    <div id="create-error" style="display:none; margin-top:12px; background:var(--danger-bg); color:var(--danger-text); font-size:13px; padding:10px 14px; border-radius:var(--radius-sm);"></div>
+    <div id="create-success" style="display:none; margin-top:12px; background:var(--success-bg); color:var(--success-text); font-size:13px; padding:10px 14px; border-radius:var(--radius-sm);"></div>
+  </div>
+
+  <!-- Liste des utilisateurs -->
+  <div class="card" style="padding:0; overflow:hidden;">
+    <div class="card-header" style="padding:16px 20px 0;">
+      <p class="card-title">Utilisateurs</p>
+      <span class="badge badge-info" id="user-count">—</span>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Identifiant</th>
+          <th>Rôle</th>
+          <th>Liens</th>
+          <th>Créé le</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="users-table"></tbody>
+    </table>
+  </div>
+
+  <!-- Zone danger -->
+  <div class="card" style="border-color:var(--danger-text);">
+    <div class="card-header">
+      <p class="card-title" style="color:var(--danger-text);">Zone danger</p>
+    </div>
+    <p style="font-size:13px; color:var(--muted); margin-bottom:16px;">
+      Supprime tous les liens, clics et utilisateurs non-admin. Cette action est irréversible.
+    </p>
+    <button class="btn" style="border-color:var(--danger-text); color:var(--danger-text);" onclick="confirmReset()">
+      Réinitialiser la base de données
+    </button>
+  </div>
+
+</main>
+
+<!-- Modal confirmation reset -->
+<div class="modal-overlay" id="reset-modal">
+  <div class="modal">
+    <p class="modal-title">Confirmer la réinitialisation</p>
+    <p style="font-size:13px; color:var(--muted); margin-bottom:24px;">
+      Tous les liens, clics et comptes utilisateurs seront supprimés.<br>Seul le compte admin sera conservé.
+    </p>
+    <div style="display:flex; gap:10px;">
+      <button class="btn" style="border-color:var(--danger-text);color:var(--danger-text);" onclick="resetDb()">Confirmer</button>
+      <button class="btn" onclick="document.getElementById('reset-modal').classList.remove('open')">Annuler</button>
+    </div>
+  </div>
+</div>
+
+<script src="/js/admin.js"></script>
+</body>
+</html>

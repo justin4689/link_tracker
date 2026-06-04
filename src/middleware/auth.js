@@ -5,3 +5,13 @@ exports.requireAuth = (req, res, next) => {
   }
   res.redirect('/login');
 };
+
+exports.requireAdmin = (req, res, next) => {
+  if (req.session?.role === 'admin') return next();
+  res.redirect('/');
+};
+
+exports.requireUser = (req, res, next) => {
+  if (req.session?.role !== 'admin') return next();
+  res.redirect('/admin');
+};

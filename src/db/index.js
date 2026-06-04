@@ -7,6 +7,7 @@ db.exec(`
     id         INTEGER PRIMARY KEY AUTOINCREMENT,
     username   TEXT UNIQUE NOT NULL,
     password   TEXT NOT NULL,
+    role       TEXT NOT NULL DEFAULT 'user',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );
   CREATE TABLE IF NOT EXISTS links (
@@ -30,19 +31,32 @@ db.exec(`
   );
 `);
 
-// Migration : ajoute user_id sur links si absent (base existante)
+// Migration : user_id sur links
 const linksCols = db.pragma('table_info(links)').map(c => c.name);
 if (!linksCols.includes('user_id')) {
   db.exec('ALTER TABLE links ADD COLUMN user_id INTEGER');
 }
 
-// Migration : crée un admin par défaut et rattache les liens orphelins
+// Migration : role sur users
+const usersCols = db.pragma('table_info(users)').map(c => c.name);
+if (!usersCols.includes('role')) {
+  db.exec("ALTER TABLE users ADD COLUMN role TEXT NOT NULL DEFAULT 'user'");
+}
+
+// S'assurer qu'il existe un admin avec role='admin'
+const admin = db.prepare("SELECT id FROM users WHERE username = 'admin'").get();
+if (!admin) {
+  const hash = bcrypt.hashSync('admin123', 10);
+  db.prepare("INSERT INTO users (username, password, role) VALUES ('admin', ?, 'admin')").run(hash);
+} else {
+  db.prepare("UPDATE users SET role = 'admin' WHERE username = 'admin'").run();
+}
+
+// Migration : rattacher les liens orphelins à l'admin
 const noOwner = db.prepare('SELECT COUNT(*) as n FROM links WHERE user_id IS NULL').get();
 if (noOwner.n > 0) {
-  const hash    = bcrypt.hashSync('admin123', 10);
-  db.prepare('INSERT OR IGNORE INTO users (username, password) VALUES (?, ?)').run('admin', hash);
-  const admin   = db.prepare('SELECT id FROM users WHERE username = ?').get('admin');
-  db.prepare('UPDATE links SET user_id = ? WHERE user_id IS NULL').run(admin.id);
+  const a = db.prepare("SELECT id FROM users WHERE username = 'admin'").get();
+  db.prepare('UPDATE links SET user_id = ? WHERE user_id IS NULL').run(a.id);
 }
 
 module.exports = db;
