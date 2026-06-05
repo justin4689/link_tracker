@@ -1,0 +1,43 @@
+<div class="page-header">
+  <div style="display:flex; align-items:center; gap:12px;">
+    <button class="btn" onclick="showTab('links')">← Retour</button>
+    <div>
+      <p class="page-title" id="detail-title">—</p>
+      <p class="page-sub"   id="detail-sub">chargement…</p>
+    </div>
+  </div>
+  <button class="copy-btn" id="detail-copy-btn" style="padding:8px 14px; font-size:13px;">Copier le lien</button>
+</div>
+
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-label">Total clics</div>
+    <div class="stat-value" id="detail-total">—</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Pays uniques</div>
+    <div class="stat-value" id="detail-countries">—</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Mobile</div>
+    <div class="stat-value" id="detail-mobile">—</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Navigateurs</div>
+    <div class="stat-value" id="detail-browsers">—</div>
+  </div>
+</div>
+
+<div class="card" style="padding:0; overflow:hidden;">
+  <div class="card-header" style="padding:16px 20px 0;">
+    <p class="card-title">Journal des clics</p>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>IP</th><th>Pays</th><th>Ville</th><th>Navigateur</th><th>OS</th><th>Appareil</th><th>Date</th>
+      </tr>
+    </thead>
+    <tbody id="detail-clicks-table"></tbody>
+  </table>
+</div>

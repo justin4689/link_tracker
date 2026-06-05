@@ -1,22 +1,22 @@
 // ---- State ----
-let allLinks  = [];
-let allClicks = [];
+let allLinks   = [];
+let allClicks  = [];
 let todayCount = 0;
-
-// ---- Init ----
-document.getElementById('current-date').textContent =
-  new Date().toLocaleDateString('fr-FR', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+let currentTab = null;
+const pageCache = {};
 
 // ---- API ----
 async function loadStats() {
   try {
     const res  = await fetch('/api/stats');
     const data = await res.json();
-    allLinks   = data.links        || [];
-    allClicks  = data.recent       || [];
-    todayCount = data.todayClicks  || 0;
-    updateStatCards();
-    renderLinksSummary();
+    allLinks   = data.links       || [];
+    allClicks  = data.recent      || [];
+    todayCount = data.todayClicks || 0;
+
+    if (currentTab === 'dashboard') { updateStatCards(); renderLinksSummary(); }
+    if (currentTab === 'links')     renderLinksFull();
+    if (currentTab === 'clics')     renderClicksFull();
   } catch (e) {
     console.error('Erreur chargement stats:', e);
   }
@@ -116,20 +116,32 @@ function renderClicksFull() {
 }
 
 // ---- Navigation ----
-function showTab(tab) {
-  ['dashboard', 'links', 'clics', 'detail'].forEach(t => {
-    document.getElementById('page-' + t).style.display = t === tab ? 'block' : 'none';
-  });
+async function showTab(tab) {
+  currentTab = tab;
+
   document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
   const navIdx = ['dashboard', 'links', 'clics'].indexOf(tab);
   if (navIdx >= 0) document.querySelectorAll('.nav-item')[navIdx]?.classList.add('active');
+
+  if (!pageCache[tab]) {
+    const res = await fetch(`/pages/${tab}.html`);
+    pageCache[tab] = await res.text();
+  }
+  document.getElementById('main-content').innerHTML = pageCache[tab];
+
+  if (tab === 'dashboard') {
+    document.getElementById('current-date').textContent =
+      new Date().toLocaleDateString('fr-FR', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+    updateStatCards();
+    renderLinksSummary();
+  }
   if (tab === 'links') renderLinksFull();
   if (tab === 'clics') renderClicksFull();
 }
 
 // ---- Page détail lien ----
 async function showDetail(linkId) {
-  showTab('detail');
+  await showTab('detail');
   document.getElementById('detail-title').textContent = 'Chargement…';
   document.getElementById('detail-sub').textContent   = '';
 
@@ -157,7 +169,6 @@ async function showDetail(linkId) {
     const browsers = new Set(data.clicks.map(c => c.browser).filter(c => c && c !== 'Inconnu'));
     document.getElementById('detail-browsers').textContent = browsers.size;
 
-    // Journal clics
     document.getElementById('detail-clicks-table').innerHTML = data.clicks.length
       ? data.clicks.map(c => `
           <tr>
@@ -176,7 +187,7 @@ async function showDetail(linkId) {
   }
 }
 
-// ---- Modal ----
+// ---- Modal création lien ----
 function openModal() {
   document.getElementById('modal').classList.add('open');
   document.getElementById('result-box').classList.remove('open');
@@ -254,11 +265,11 @@ document.getElementById('pwd-modal').addEventListener('click', e => {
 });
 
 async function changePassword() {
-  const currentPassword  = document.getElementById('pwd-current').value.trim();
-  const newPassword      = document.getElementById('pwd-new').value.trim();
-  const confirmPassword  = document.getElementById('pwd-confirm').value.trim();
-  const errEl  = document.getElementById('pwd-error');
-  const okEl   = document.getElementById('pwd-success');
+  const currentPassword = document.getElementById('pwd-current').value.trim();
+  const newPassword     = document.getElementById('pwd-new').value.trim();
+  const confirmPassword = document.getElementById('pwd-confirm').value.trim();
+  const errEl = document.getElementById('pwd-error');
+  const okEl  = document.getElementById('pwd-success');
 
   errEl.style.display = 'none';
   okEl.style.display  = 'none';
@@ -276,8 +287,8 @@ async function changePassword() {
     return;
   }
 
-  okEl.textContent    = 'Mot de passe modifié avec succès.';
-  okEl.style.display  = 'block';
+  okEl.textContent   = 'Mot de passe modifié avec succès.';
+  okEl.style.display = 'block';
   setTimeout(closePwdModal, 1500);
 }
 
@@ -286,5 +297,5 @@ fetch('/api/me')
   .then(r => r.json())
   .then(d => { document.getElementById('sidebar-username').textContent = d.username; });
 
-loadStats();
+showTab('dashboard').then(() => loadStats());
 setInterval(loadStats, 30000);

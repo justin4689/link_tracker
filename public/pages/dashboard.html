@@ -1,0 +1,41 @@
+<div class="page-header">
+  <div>
+    <p class="page-title">Tableau de bord</p>
+    <p class="page-sub">Données en temps réel — <span id="current-date"></span></p>
+  </div>
+  <button class="btn btn-primary" onclick="openModal()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    Nouveau lien
+  </button>
+</div>
+
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-label">Total clics</div>
+    <div class="stat-value" id="s-total">—</div>
+    <div class="stat-delta" id="s-total-delta">chargement…</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Liens actifs</div>
+    <div class="stat-value" id="s-links">—</div>
+    <div class="stat-delta">↑ créez le prochain</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Pays touchés</div>
+    <div class="stat-value" id="s-countries">—</div>
+    <div class="stat-delta" id="s-countries-delta"> </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Mobile vs Desktop</div>
+    <div class="stat-value" id="s-mobile">—</div>
+    <div class="stat-delta" id="s-mobile-delta"> </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <p class="card-title">Vos liens de suivi</p>
+    <button class="btn" onclick="showTab('links'); openModal()">+ Créer</button>
+  </div>
+  <div id="links-summary"></div>
+</div>
