@@ -1,59 +1,60 @@
-const bcrypt   = require('bcryptjs');
-const Database = require('better-sqlite3');
-const db       = new Database('tracker.db');
+const { createClient } = require('@libsql/client');
+const { drizzle }      = require('drizzle-orm/libsql');
+const bcrypt           = require('bcryptjs');
+const schema           = require('./schema');
 
-db.exec(`
-  CREATE TABLE IF NOT EXISTS users (
-    id         INTEGER PRIMARY KEY AUTOINCREMENT,
-    username   TEXT UNIQUE NOT NULL,
-    password   TEXT NOT NULL,
-    role       TEXT NOT NULL DEFAULT 'user',
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-  );
-  CREATE TABLE IF NOT EXISTS links (
-    id          TEXT PRIMARY KEY,
-    destination TEXT,
-    campaign    TEXT,
-    user_id     INTEGER,
-    created_at  DATETIME DEFAULT CURRENT_TIMESTAMP
-  );
-  CREATE TABLE IF NOT EXISTS clicks (
-    id         INTEGER PRIMARY KEY AUTOINCREMENT,
-    link_id    TEXT,
-    ip         TEXT,
-    country    TEXT,
-    city       TEXT,
-    browser    TEXT,
-    os         TEXT,
-    device     TEXT,
-    referer    TEXT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-  );
-`);
+const client = createClient({
+  url:       process.env.TURSO_DATABASE_URL,
+  authToken: process.env.TURSO_AUTH_TOKEN,
+});
 
-// Migration : user_id sur links
-const linksCols = db.pragma('table_info(links)').map(c => c.name);
-if (!linksCols.includes('user_id')) {
-  db.exec('ALTER TABLE links ADD COLUMN user_id INTEGER');
+const db = drizzle(client, { schema });
+
+async function initSchema() {
+  await client.execute(`
+    CREATE TABLE IF NOT EXISTS users (
+      id         INTEGER PRIMARY KEY AUTOINCREMENT,
+      username   TEXT UNIQUE NOT NULL,
+      password   TEXT NOT NULL,
+      role       TEXT NOT NULL DEFAULT 'user',
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  await client.execute(`
+    CREATE TABLE IF NOT EXISTS links (
+      id          TEXT PRIMARY KEY,
+      destination TEXT NOT NULL,
+      campaign    TEXT DEFAULT '',
+      user_id     INTEGER,
+      created_at  TEXT DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  await client.execute(`
+    CREATE TABLE IF NOT EXISTS clicks (
+      id         INTEGER PRIMARY KEY AUTOINCREMENT,
+      link_id    TEXT,
+      ip         TEXT,
+      country    TEXT,
+      city       TEXT,
+      browser    TEXT,
+      os         TEXT,
+      device     TEXT,
+      referer    TEXT,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  const { rows } = await client.execute("SELECT id FROM users WHERE username = 'admin'");
+  if (rows.length === 0) {
+    const hash = await bcrypt.hash('admin123', 10);
+    await client.execute({
+      sql:  "INSERT INTO users (username, password, role) VALUES ('admin', ?, 'admin')",
+      args: [hash],
+    });
+    console.log('Admin créé — identifiants : admin / admin123');
+  }
 }
 
-// Migration : role sur users
-const usersCols = db.pragma('table_info(users)').map(c => c.name);
-if (!usersCols.includes('role')) {
-  db.exec("ALTER TABLE users ADD COLUMN role TEXT NOT NULL DEFAULT 'user'");
-}
-
-// S'assurer qu'il existe un admin avec role='admin'
-const admin = db.prepare("SELECT id FROM users WHERE username = 'admin'").get();
-if (!admin) {
-  const hash = bcrypt.hashSync('admin123', 10);
-  db.prepare("INSERT INTO users (username, password, role) VALUES ('admin', ?, 'admin')").run(hash);
-} else {
-  db.prepare("UPDATE users SET role = 'admin' WHERE username = 'admin'").run();
-}
-
-// Migration : supprimer les liens orphelins (créés avant le système multi-utilisateurs)
-db.prepare('DELETE FROM clicks WHERE link_id IN (SELECT id FROM links WHERE user_id IS NULL)').run();
-db.prepare('DELETE FROM links WHERE user_id IS NULL').run();
-
-module.exports = db;
+module.exports = { db, client, initSchema };

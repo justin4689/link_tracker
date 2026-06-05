@@ -1,6 +1,8 @@
 const geoip    = require('geoip-lite');
 const UAParser = require('ua-parser-js');
-const db       = require('../db');
+const { db }   = require('../db');
+const { links, clicks } = require('../db/schema');
+const { eq }   = require('drizzle-orm');
 
 function isPrivateIP(ip) {
   return (
@@ -16,33 +18,32 @@ function isPrivateIP(ip) {
 function resolveGeo(ip) {
   if (isPrivateIP(ip)) return { country: 'Local', city: 'Localhost' };
   const geo = geoip.lookup(ip) || {};
-  return {
-    country: geo.country || 'Inconnu',
-    city:    geo.city    || 'Inconnue',
-  };
+  return { country: geo.country || 'Inconnu', city: geo.city || 'Inconnue' };
 }
 
-exports.trackClick = (req, res) => {
-  const link = db.prepare('SELECT * FROM links WHERE id = ?').get(req.params.id);
-  if (!link) return res.status(404).send('Lien introuvable');
+exports.trackClick = async (req, res) => {
+  try {
+    const [link] = await db.select().from(links).where(eq(links.id, req.params.id));
+    if (!link) return res.status(404).send('Lien introuvable');
 
-  const ip  = req.headers['x-forwarded-for']?.split(',')[0].trim() || req.ip;
-  const geo = resolveGeo(ip);
-  const ua  = new UAParser(req.headers['user-agent']);
+    const ip  = req.headers['x-forwarded-for']?.split(',')[0].trim() || req.ip;
+    const geo = resolveGeo(ip);
+    const ua  = new UAParser(req.headers['user-agent']);
 
-  db.prepare(`
-    INSERT INTO clicks (link_id, ip, country, city, browser, os, device, referer)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-  `).run(
-    req.params.id,
-    ip,
-    geo.country,
-    geo.city,
-    ua.getBrowser().name || 'Inconnu',
-    ua.getOS().name      || 'Inconnu',
-    ua.getDevice().type  || 'desktop',
-    req.headers['referer'] || 'Direct'
-  );
+    await db.insert(clicks).values({
+      linkId:  req.params.id,
+      ip,
+      country: geo.country,
+      city:    geo.city,
+      browser: ua.getBrowser().name || 'Inconnu',
+      os:      ua.getOS().name      || 'Inconnu',
+      device:  ua.getDevice().type  || 'desktop',
+      referer: req.headers['referer'] || 'Direct',
+    });
 
-  res.redirect(link.destination);
+    res.redirect(link.destination);
+  } catch (e) {
+    console.error(e);
+    res.status(500).send('Erreur serveur');
+  }
 };

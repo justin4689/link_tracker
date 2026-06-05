@@ -12,9 +12,10 @@
     "dev": "nodemon index.js"
   },
   "dependencies": {
+    "@libsql/client": "^0.17.3",
     "bcryptjs": "^3.0.3",
-    "better-sqlite3": "^12.10.0",
     "dotenv": "^17.4.2",
+    "drizzle-orm": "^0.45.2",
     "express": "^5.2.1",
     "express-session": "^1.19.0",
     "geoip-lite": "^2.0.2",
