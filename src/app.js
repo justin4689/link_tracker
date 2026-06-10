@@ -25,7 +25,7 @@ app.use(session({
 app.use(authRouter);
 
 // Tracking — public (les liens doivent fonctionner sans compte)
-app.use('/track', trackingRouter);
+app.use('/r', trackingRouter);
 
 // Garde sur les fichiers HTML avant express.static
 app.use((req, res, next) => {

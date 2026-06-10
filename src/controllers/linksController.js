@@ -16,7 +16,7 @@ exports.createLink = async (req, res) => {
       userId:   req.session.userId,
     });
 
-    res.json({ id, url: `${req.protocol}://${req.get('host')}/track/${id}` });
+    res.json({ id, url: `${req.protocol}://${req.get('host')}/r/${id}` });
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: 'Erreur serveur' });
